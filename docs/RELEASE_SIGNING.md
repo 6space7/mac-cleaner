@@ -1,6 +1,6 @@
 # Release Signing
 
-Mac Cleaner can build public release zips without Apple credentials, but signed and notarized releases need a Developer ID certificate plus Apple notarization credentials.
+Mac Cleaner can build public release DMGs without Apple credentials, but signed and notarized releases need a Developer ID certificate plus Apple notarization credentials.
 
 Do not commit certificates, passwords, `.env` files, or exported key material to this repository. Store them as GitHub Actions secrets.
 
@@ -46,4 +46,4 @@ codesign -dvvv --entitlements :- path/to/mac-cleaner.app
 spctl -a -vv path/to/mac-cleaner.app
 ```
 
-For a fully trusted public download, the app bundle should be signed with Developer ID, notarized, and stapled.
+For a fully trusted public download, both the app bundle and the DMG should be signed/notarized where applicable, and stapled.

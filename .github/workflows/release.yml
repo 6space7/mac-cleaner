@@ -84,118 +84,156 @@ jobs:
           echo "keychain=$KEYCHAIN_PATH" >> "$GITHUB_OUTPUT"
           echo "identity=$IDENTITY" >> "$GITHUB_OUTPUT"
 
-      - name: Build release app
+      - name: Build notarized DMGs
+        id: package
         env:
+          VERSION: ${{ steps.version.outputs.value }}
           SIGNING_AVAILABLE: ${{ steps.signing.outputs.available }}
           SIGNING_IDENTITY: ${{ steps.signing.outputs.identity }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          set -euo pipefail
-          if [[ "$SIGNING_AVAILABLE" == "true" ]]; then
-            xcodebuild \
-              -project "$PROJECT" \
-              -scheme "$SCHEME" \
-              -configuration "$CONFIGURATION" \
-              -derivedDataPath "$DERIVED_DATA" \
-              CODE_SIGN_STYLE=Manual \
-              CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
-              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-              CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
-              ENABLE_HARDENED_RUNTIME=YES \
-              OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
-              build
-          else
-            xcodebuild \
-              -project "$PROJECT" \
-              -scheme "$SCHEME" \
-              -configuration "$CONFIGURATION" \
-              -derivedDataPath "$DERIVED_DATA" \
-              CODE_SIGNING_ALLOWED=NO \
-              build
-          fi
-
-      - name: Package zip
-        id: package
-        run: |
-          set -euo pipefail
-          APP_PATH="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME.app"
-          if [[ ! -d "$APP_PATH" ]]; then
-            echo "Could not find app bundle at $APP_PATH" >&2
-            exit 1
-          fi
-
-          ZIP_PATH="$RUNNER_TEMP/Mac-Cleaner-${{ steps.version.outputs.value }}.zip"
-          ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
-          echo "zip=$ZIP_PATH" >> "$GITHUB_OUTPUT"
-          echo "app=$APP_PATH" >> "$GITHUB_OUTPUT"
-
-      - name: Notarize and staple
-        id: notarize
-        env:
-          SIGNING_AVAILABLE: ${{ steps.signing.outputs.available }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
-          if [[ "$SIGNING_AVAILABLE" != "true" || -z "$APPLE_ID" || -z "$APPLE_APP_SPECIFIC_PASSWORD" || -z "$APPLE_TEAM_ID" ]]; then
-            echo "notarized=false" >> "$GITHUB_OUTPUT"
-            echo "Notarization secrets are incomplete. Keeping the unsigned or signed-only zip."
-            exit 0
-          fi
 
-          NOTARY_JSON="$RUNNER_TEMP/notary-result.json"
-          xcrun notarytool submit "${{ steps.package.outputs.zip }}" \
-            --apple-id "$APPLE_ID" \
-            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \
-            --wait \
-            --output-format json > "$NOTARY_JSON"
+          ASSET_DIR="$RUNNER_TEMP/release-assets"
+          mkdir -p "$ASSET_DIR"
 
-          NOTARY_STATUS="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("status", ""))' "$NOTARY_JSON")"
-          SUBMISSION_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id", ""))' "$NOTARY_JSON")"
-          if [[ "$NOTARY_STATUS" != "Accepted" ]]; then
-            echo "Notarization finished with status: $NOTARY_STATUS" >&2
-            if [[ -n "$SUBMISSION_ID" ]]; then
-              xcrun notarytool log "$SUBMISSION_ID" \
-                --apple-id "$APPLE_ID" \
-                --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-                --team-id "$APPLE_TEAM_ID" \
-                "$RUNNER_TEMP/notary-log.json" || true
-              cat "$RUNNER_TEMP/notary-log.json" || true
+          notarization_available() {
+            [[ "$SIGNING_AVAILABLE" == "true" && -n "$APPLE_ID" && -n "$APPLE_APP_SPECIFIC_PASSWORD" && -n "$APPLE_TEAM_ID" ]]
+          }
+
+          notarize_file() {
+            local file_path="$1"
+            local label="$2"
+            local json_path="$RUNNER_TEMP/notary-${label}.json"
+            local log_path="$RUNNER_TEMP/notary-${label}-log.json"
+
+            xcrun notarytool submit "$file_path" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait \
+              --output-format json > "$json_path"
+
+            local status
+            local submission_id
+            status="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("status", ""))' "$json_path")"
+            submission_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id", ""))' "$json_path")"
+            if [[ "$status" != "Accepted" ]]; then
+              echo "Notarization for $label finished with status: $status" >&2
+              if [[ -n "$submission_id" ]]; then
+                xcrun notarytool log "$submission_id" \
+                  --apple-id "$APPLE_ID" \
+                  --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+                  --team-id "$APPLE_TEAM_ID" \
+                  "$log_path" || true
+                cat "$log_path" || true
+              fi
+              exit 1
             fi
-            exit 1
+          }
+
+          build_arch_dmg() {
+            local arch="$1"
+            local label="$2"
+            local display="$3"
+            local derived_data="$RUNNER_TEMP/DerivedData-$label"
+            local app_path="$derived_data/Build/Products/$CONFIGURATION/$APP_NAME.app"
+            local dmg_staging="$RUNNER_TEMP/dmg-staging-$label"
+            local dmg_path="$ASSET_DIR/Mac-Cleaner-$VERSION-$label.dmg"
+
+            if [[ "$SIGNING_AVAILABLE" == "true" ]]; then
+              xcodebuild \
+                -project "$PROJECT" \
+                -scheme "$SCHEME" \
+                -configuration "$CONFIGURATION" \
+                -destination "generic/platform=macOS" \
+                -derivedDataPath "$derived_data" \
+                ARCHS="$arch" \
+                ONLY_ACTIVE_ARCH=NO \
+                CODE_SIGN_STYLE=Manual \
+                CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
+                DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+                CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+                ENABLE_HARDENED_RUNTIME=YES \
+                OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
+                build
+            else
+              xcodebuild \
+                -project "$PROJECT" \
+                -scheme "$SCHEME" \
+                -configuration "$CONFIGURATION" \
+                -destination "generic/platform=macOS" \
+                -derivedDataPath "$derived_data" \
+                ARCHS="$arch" \
+                ONLY_ACTIVE_ARCH=NO \
+                CODE_SIGNING_ALLOWED=NO \
+                build
+            fi
+
+            if [[ ! -d "$app_path" ]]; then
+              echo "Could not find app bundle at $app_path" >&2
+              exit 1
+            fi
+
+            if notarization_available; then
+              codesign --verify --deep --strict --verbose=2 "$app_path"
+              local app_zip="$RUNNER_TEMP/Mac-Cleaner-$VERSION-$label-app.zip"
+              ditto -c -k --keepParent "$app_path" "$app_zip"
+              notarize_file "$app_zip" "$label-app"
+              xcrun stapler staple "$app_path"
+            fi
+
+            rm -rf "$dmg_staging"
+            mkdir -p "$dmg_staging"
+            cp -R "$app_path" "$dmg_staging/"
+            ln -s /Applications "$dmg_staging/Applications"
+            hdiutil create \
+              -volname "Mac Cleaner $VERSION $display" \
+              -srcfolder "$dmg_staging" \
+              -ov \
+              -format UDZO \
+              "$dmg_path"
+
+            if notarization_available; then
+              notarize_file "$dmg_path" "$label-dmg"
+              xcrun stapler staple "$dmg_path"
+            fi
+          }
+
+          build_arch_dmg "arm64" "apple-silicon" "Apple Silicon"
+          build_arch_dmg "x86_64" "intel" "Intel"
+
+          if notarization_available; then
+            echo "notarized=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "notarized=false" >> "$GITHUB_OUTPUT"
           fi
-
-          xcrun stapler staple "${{ steps.package.outputs.app }}"
-
-          NOTARIZED_ZIP="$RUNNER_TEMP/Mac-Cleaner-${{ steps.version.outputs.value }}-notarized.zip"
-          ditto -c -k --keepParent "${{ steps.package.outputs.app }}" "$NOTARIZED_ZIP"
-          echo "zip=$NOTARIZED_ZIP" >> "$GITHUB_OUTPUT"
-          echo "notarized=true" >> "$GITHUB_OUTPUT"
+          echo "asset_dir=$ASSET_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: Mac-Cleaner-${{ steps.version.outputs.value }}
-          path: ${{ steps.notarize.outputs.zip || steps.package.outputs.zip }}
+          path: ${{ steps.package.outputs.asset_dir }}/*.dmg
 
       - name: Create GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_ZIP: ${{ steps.notarize.outputs.zip || steps.package.outputs.zip }}
-          NOTARIZED: ${{ steps.notarize.outputs.notarized }}
+          ASSET_DIR: ${{ steps.package.outputs.asset_dir }}
+          NOTARIZED: ${{ steps.package.outputs.notarized }}
         run: |
           set -euo pipefail
           NOTES="Mac Cleaner ${GITHUB_REF_NAME}"
           if [[ "$NOTARIZED" == "true" ]]; then
-            NOTES="$NOTES"$'\n\n'"This zip contains a signed, notarized, and stapled app bundle."
+            NOTES="$NOTES"$'\n\n'"Includes signed, notarized, and stapled DMGs for Apple Silicon and Intel Macs."
           else
-            NOTES="$NOTES"$'\n\n'"Signing/notarization secrets were missing or incomplete, so this zip is not notarized."
+            NOTES="$NOTES"$'\n\n'"Signing/notarization secrets were missing or incomplete, so these DMGs are not notarized."
           fi
 
-          gh release create "$GITHUB_REF_NAME" "$RELEASE_ZIP" \
+          gh release create "$GITHUB_REF_NAME" "$ASSET_DIR"/*.dmg \
             --title "Mac Cleaner $GITHUB_REF_NAME" \
             --notes "$NOTES" \
             --latest

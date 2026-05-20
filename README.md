@@ -54,10 +54,10 @@ Useful debugging modes:
 This repository includes GitHub Actions for:
 
 - `CI`: builds the macOS app on every push and pull request.
-- `Release`: builds a release zip on version tags such as `v1.0.0` or manual dispatch.
+- `Release`: builds Apple Silicon and Intel DMGs on version tags such as `v1.0.0` or manual dispatch.
 - Dependabot: keeps GitHub Actions versions fresh.
 
-The release workflow creates an unsigned zip if signing secrets are missing. When Apple signing secrets are configured, it imports the Developer ID certificate into a temporary keychain, builds with hardened runtime, submits the zip to Apple notarization, staples the app, and uploads the notarized zip.
+The release workflow creates unsigned DMGs if signing secrets are missing. When Apple signing secrets are configured, it imports the Developer ID certificate into a temporary keychain, builds with hardened runtime, notarizes and staples the app bundle, then notarizes and staples both DMGs.
 
 See [Release Signing](docs/RELEASE_SIGNING.md) for the required secret names.
 
@@ -70,7 +70,10 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The release workflow will attach the generated zip to the GitHub release when it is triggered by a tag.
+The release workflow will attach these downloads when it is triggered by a tag:
+
+- `Mac-Cleaner-vX.Y.Z-apple-silicon.dmg`
+- `Mac-Cleaner-vX.Y.Z-intel.dmg`
 
 ## Project Structure
 
