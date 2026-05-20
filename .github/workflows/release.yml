@@ -136,6 +136,46 @@ jobs:
             fi
           }
 
+          resign_embedded_frameworks() {
+            local app_path="$1"
+            local label="$2"
+            local entitlements_path="$RUNNER_TEMP/${label}-app-entitlements.plist"
+            local has_entitlements=false
+
+            if codesign -d --entitlements :- "$app_path" > "$entitlements_path" 2>/dev/null; then
+              has_entitlements=true
+            fi
+
+            local sparkle_framework="$app_path/Contents/Frameworks/Sparkle.framework"
+            if [[ -d "$sparkle_framework" ]]; then
+              codesign \
+                --force \
+                --deep \
+                --sign "$SIGNING_IDENTITY" \
+                --timestamp \
+                --options runtime \
+                --preserve-metadata=identifier,entitlements,requirements,flags \
+                "$sparkle_framework"
+            fi
+
+            if [[ "$has_entitlements" == "true" ]]; then
+              codesign \
+                --force \
+                --sign "$SIGNING_IDENTITY" \
+                --timestamp \
+                --options runtime \
+                --entitlements "$entitlements_path" \
+                "$app_path"
+            else
+              codesign \
+                --force \
+                --sign "$SIGNING_IDENTITY" \
+                --timestamp \
+                --options runtime \
+                "$app_path"
+            fi
+          }
+
           build_arch_dmg() {
             local arch="$1"
             local label="$2"
@@ -180,6 +220,7 @@ jobs:
             fi
 
             if notarization_available; then
+              resign_embedded_frameworks "$app_path" "$label"
               codesign --verify --deep --strict --verbose=2 "$app_path"
               local app_zip="$RUNNER_TEMP/Mac-Cleaner-$VERSION-$label-app.zip"
               ditto -c -k --keepParent "$app_path" "$app_zip"
