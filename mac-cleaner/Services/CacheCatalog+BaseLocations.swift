@@ -1,0 +1,520 @@
+import Foundation
+
+extension CacheCatalog {
+    nonisolated static func baseLocations(home: URL) -> [CleanupLocation] {
+        [
+            CleanupLocation(
+                categoryID: .userCaches,
+                title: "Library Caches",
+                detail: "Top-level folders in ~/Library/Caches.",
+                url: home.appendingPathComponent("Library/Caches"),
+                minimumProfile: .quick,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .logs,
+                title: "User Logs",
+                detail: "Rotating logs stored by apps in ~/Library/Logs.",
+                url: home.appendingPathComponent("Library/Logs"),
+                minimumProfile: .quick,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7
+            ),
+            CleanupLocation(
+                categoryID: .browserStorage,
+                title: "Chrome Service Workers",
+                detail: "CacheStorage entries created by web apps.",
+                url: home.appendingPathComponent("Library/Application Support/Google/Chrome/Default/Service Worker/CacheStorage"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 3,
+                blockedProcessNames: ["Google Chrome"]
+            ),
+            CleanupLocation(
+                categoryID: .browserStorage,
+                title: "Arc Service Workers",
+                detail: "Arc web app cache storage.",
+                url: home.appendingPathComponent("Library/Application Support/Arc/User Data/Default/Service Worker/CacheStorage"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 3,
+                blockedProcessNames: ["Arc"]
+            ),
+            CleanupLocation(
+                categoryID: .browserStorage,
+                title: "Brave Service Workers",
+                detail: "CacheStorage entries created by Brave web apps.",
+                url: home.appendingPathComponent("Library/Application Support/BraveSoftware/Brave-Browser/Default/Service Worker/CacheStorage"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 3,
+                blockedProcessNames: ["Brave Browser"]
+            ),
+            CleanupLocation(
+                categoryID: .browserStorage,
+                title: "Edge Service Workers",
+                detail: "CacheStorage entries created by Edge web apps.",
+                url: home.appendingPathComponent("Library/Application Support/Microsoft Edge/Default/Service Worker/CacheStorage"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 3,
+                blockedProcessNames: ["Microsoft Edge"]
+            ),
+            CleanupLocation(
+                categoryID: .browserStorage,
+                title: "Vivaldi Service Workers",
+                detail: "Vivaldi web app cache storage.",
+                url: home.appendingPathComponent("Library/Application Support/Vivaldi/Default/Service Worker/CacheStorage"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 3,
+                blockedProcessNames: ["Vivaldi"]
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Xcode DerivedData",
+                detail: "Rebuildable project indexes and build outputs.",
+                url: home.appendingPathComponent("Library/Developer/Xcode/DerivedData"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 2,
+                blockedProcessNames: ["Xcode"]
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Xcode Module Cache",
+                detail: "Compiler module caches recreated by Xcode.",
+                url: home.appendingPathComponent("Library/Developer/Xcode/DerivedData/ModuleCache.noindex"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "CoreSimulator Caches",
+                detail: "Simulator cache files that can be recreated.",
+                url: home.appendingPathComponent("Library/Developer/CoreSimulator/Caches"),
+                minimumProfile: .balanced,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 2,
+                blockedProcessNames: ["Simulator"]
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Xcode Device Support",
+                detail: "Large device symbols; review before deleting.",
+                url: home.appendingPathComponent("Library/Developer/Xcode/iOS DeviceSupport"),
+                minimumProfile: .deep,
+                risk: .high,
+                defaultSelected: false,
+                recommendedMinimumAgeDays: 30
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Homebrew Cache",
+                detail: "Downloaded formula and bottle cache.",
+                url: home.appendingPathComponent("Library/Caches/Homebrew"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Yarn Cache",
+                detail: "Yarn package cache.",
+                url: home.appendingPathComponent("Library/Caches/Yarn"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Bun Cache",
+                detail: "Bun package install cache.",
+                url: home.appendingPathComponent(".bun/install/cache"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "VS Code Cache",
+                detail: "Editor cache, GPU cache, and extension downloads.",
+                url: home.appendingPathComponent("Library/Application Support/Code/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Code"]
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Cursor Cache",
+                detail: "Cursor editor cache and GPU cache.",
+                url: home.appendingPathComponent("Library/Application Support/Cursor/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Cursor"]
+            ),
+            CleanupLocation(
+                categoryID: .aiTools,
+                title: "ChatGPT Cache",
+                detail: "ChatGPT desktop app cache.",
+                url: home.appendingPathComponent("Library/Caches/com.openai.chat"),
+                kind: .folder,
+                minimumProfile: .quick,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["ChatGPT"]
+            ),
+            CleanupLocation(
+                categoryID: .aiTools,
+                title: "Claude Cache",
+                detail: "Claude desktop cache and temporary renderer data.",
+                url: home.appendingPathComponent("Library/Application Support/Claude/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Claude"]
+            ),
+            CleanupLocation(
+                categoryID: .aiTools,
+                title: "Codex Cache",
+                detail: "Codex desktop renderer cache.",
+                url: home.appendingPathComponent("Library/Application Support/Codex/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Codex"]
+            ),
+            CleanupLocation(
+                categoryID: .communication,
+                title: "Slack Cache",
+                detail: "Slack desktop cache and renderer data.",
+                url: home.appendingPathComponent("Library/Application Support/Slack/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Slack"]
+            ),
+            CleanupLocation(
+                categoryID: .communication,
+                title: "Discord Cache",
+                detail: "Discord desktop cache.",
+                url: home.appendingPathComponent("Library/Application Support/discord/Cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Discord"]
+            ),
+            CleanupLocation(
+                categoryID: .communication,
+                title: "Zoom Cache",
+                detail: "Zoom cache files.",
+                url: home.appendingPathComponent("Library/Caches/us.zoom.xos"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["zoom.us"]
+            ),
+            CleanupLocation(
+                categoryID: .communication,
+                title: "Microsoft Teams Cache",
+                detail: "Teams cache files.",
+                url: home.appendingPathComponent("Library/Caches/com.microsoft.teams2"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Microsoft Teams"]
+            ),
+            CleanupLocation(
+                categoryID: .designTools,
+                title: "Figma Cache",
+                detail: "Figma desktop cache.",
+                url: home.appendingPathComponent("Library/Caches/com.figma.Desktop"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Figma"]
+            ),
+            CleanupLocation(
+                categoryID: .designTools,
+                title: "Adobe Cache",
+                detail: "Adobe app cache directory.",
+                url: home.appendingPathComponent("Library/Caches/Adobe"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 2,
+                blockedProcessNames: ["Adobe Desktop Service", "AdobeIPCBroker"]
+            ),
+            CleanupLocation(
+                categoryID: .designTools,
+                title: "Adobe Media Cache",
+                detail: "Regenerable Adobe media cache files.",
+                url: home.appendingPathComponent("Library/Application Support/Adobe/Common/Media Cache Files"),
+                minimumProfile: .deep,
+                risk: .medium,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7,
+                blockedProcessNames: ["Adobe Premiere Pro", "After Effects", "Adobe Media Encoder"]
+            ),
+            CleanupLocation(
+                categoryID: .designTools,
+                title: "Sketch Cache",
+                detail: "Sketch app cache.",
+                url: home.appendingPathComponent("Library/Caches/com.bohemiancoding.sketch3"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Sketch"]
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "npm Cache",
+                detail: "npm package tarball cache.",
+                url: home.appendingPathComponent(".npm/_cacache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "pnpm Store",
+                detail: "Global pnpm content-addressable store.",
+                url: home.appendingPathComponent("Library/pnpm/store"),
+                minimumProfile: .deep,
+                risk: .medium,
+                defaultSelected: false,
+                recommendedMinimumAgeDays: 14
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "pip Cache",
+                detail: "Python wheel and HTTP cache.",
+                url: home.appendingPathComponent("Library/Caches/pip"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Gradle Caches",
+                detail: "Gradle dependency and transform cache.",
+                url: home.appendingPathComponent(".gradle/caches"),
+                minimumProfile: .deep,
+                risk: .medium,
+                defaultSelected: false,
+                recommendedMinimumAgeDays: 14
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "SwiftPM Cache",
+                detail: "Swift Package Manager repository cache.",
+                url: home.appendingPathComponent("Library/Caches/org.swift.swiftpm"),
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "npm npx Cache",
+                detail: "Temporary packages downloaded by npx.",
+                url: home.appendingPathComponent(".npm/_npx"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "npm Logs",
+                detail: "npm debug logs.",
+                url: home.appendingPathComponent(".npm/_logs"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "pnpm Cache",
+                detail: "pnpm metadata and package cache.",
+                url: home.appendingPathComponent("Library/Caches/pnpm"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Go Build Cache",
+                detail: "Regenerable Go compiler cache.",
+                url: home.appendingPathComponent("Library/Caches/go-build"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Go Module Cache",
+                detail: "Downloaded Go module zip and metadata cache.",
+                url: home.appendingPathComponent("go/pkg/mod/cache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Rust Downloads",
+                detail: "Downloaded rustup archives that can be fetched again.",
+                url: home.appendingPathComponent(".rustup/downloads"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7
+            ),
+            CleanupLocation(
+                categoryID: .packages,
+                title: "Rust Temporary Files",
+                detail: "Temporary rustup installation files.",
+                url: home.appendingPathComponent(".rustup/tmp"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Xcode Cache",
+                detail: "Xcode app cache files.",
+                url: home.appendingPathComponent("Library/Caches/com.apple.dt.Xcode"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1,
+                blockedProcessNames: ["Xcode"]
+            ),
+            CleanupLocation(
+                categoryID: .developer,
+                title: "Xcode Documentation Cache",
+                detail: "Downloaded Xcode documentation indexes.",
+                url: home.appendingPathComponent("Library/Developer/Xcode/DocumentationCache"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7,
+                blockedProcessNames: ["Xcode"]
+            ),
+            CleanupLocation(
+                categoryID: .logs,
+                title: "Diagnostic Reports",
+                detail: "User crash and diagnostic reports.",
+                url: home.appendingPathComponent("Library/Logs/DiagnosticReports"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7
+            ),
+            CleanupLocation(
+                categoryID: .logs,
+                title: "CrashReporter",
+                detail: "User crash reporter cache.",
+                url: home.appendingPathComponent("Library/Application Support/CrashReporter"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 7
+            ),
+            CleanupLocation(
+                categoryID: .userCaches,
+                title: "Zsh Completion Cache",
+                detail: "Regenerated shell completion cache.",
+                url: home.appendingPathComponent(".zcompdump"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .userCaches,
+                title: "Zsh Compiled Cache",
+                detail: "Regenerated shell completion bytecode.",
+                url: home.appendingPathComponent(".zcompdump.zwc"),
+                kind: .folder,
+                minimumProfile: .balanced,
+                risk: .low,
+                defaultSelected: true,
+                recommendedMinimumAgeDays: 1
+            ),
+            CleanupLocation(
+                categoryID: .installers,
+                title: "Downloaded Installers",
+                detail: "Old installers and archives in Downloads.",
+                url: home.appendingPathComponent("Downloads"),
+                kind: .matchingFiles(
+                    extensions: ["dmg", "pkg", "zip", "rar", "7z", "tar", "gz", "xz", "iso"],
+                    minimumAgeDays: 7
+                ),
+                minimumProfile: .deep,
+                risk: .high,
+                defaultSelected: false,
+                recommendedMinimumAgeDays: 30
+            )
+        ]
+    }
+}

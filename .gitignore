@@ -1,0 +1,20 @@
+build/
+DerivedData/
+*.xcuserdata/
+*.xcuserstate
+.DS_Store
+
+# Local signing and release secrets
+.env
+.env.*
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.key
+*.pem
+
+# Packaged release artifacts
+release/
+*.zip
+*.dmg
