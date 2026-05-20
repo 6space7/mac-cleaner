@@ -156,7 +156,7 @@ jobs:
           echo "notarized=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Mac-Cleaner-${{ steps.version.outputs.value }}
           path: ${{ steps.notarize.outputs.zip || steps.package.outputs.zip }}
