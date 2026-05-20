@@ -19,6 +19,7 @@ env:
   CONFIGURATION: Release
   APP_NAME: mac-cleaner
   DERIVED_DATA: build/DerivedData
+  SPARKLE_VERSION: 2.9.2
 
 jobs:
   package:
@@ -93,6 +94,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
         run: |
           set -euo pipefail
 
@@ -205,6 +207,31 @@ jobs:
           build_arch_dmg "arm64" "apple-silicon" "Apple Silicon"
           build_arch_dmg "x86_64" "intel" "Intel"
 
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            if [[ -z "$SPARKLE_ED_PRIVATE_KEY" ]]; then
+              echo "SPARKLE_ED_PRIVATE_KEY is required to generate a signed Sparkle appcast for tag releases." >&2
+              exit 1
+            fi
+
+            sparkle_archive="$RUNNER_TEMP/Sparkle-$SPARKLE_VERSION.tar.xz"
+            sparkle_dir="$RUNNER_TEMP/Sparkle-$SPARKLE_VERSION"
+            curl -fsSL \
+              "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz" \
+              -o "$sparkle_archive"
+            mkdir -p "$sparkle_dir"
+            tar -xf "$sparkle_archive" -C "$sparkle_dir" --strip-components 1
+
+            download_prefix="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/"
+            printf '%s' "$SPARKLE_ED_PRIVATE_KEY" | \
+              "$sparkle_dir/bin/generate_appcast" \
+                --ed-key-file - \
+                --download-url-prefix "$download_prefix" \
+                -o "$ASSET_DIR/appcast.xml" \
+                "$ASSET_DIR"
+          else
+            echo "Skipping Sparkle appcast generation for non-tag workflow run."
+          fi
+
           if notarization_available; then
             echo "notarized=true" >> "$GITHUB_OUTPUT"
           else
@@ -216,7 +243,10 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Mac-Cleaner-${{ steps.version.outputs.value }}
-          path: ${{ steps.package.outputs.asset_dir }}/*.dmg
+          path: |
+            ${{ steps.package.outputs.asset_dir }}/*.dmg
+            ${{ steps.package.outputs.asset_dir }}/appcast.xml
+            ${{ steps.package.outputs.asset_dir }}/*.delta
 
       - name: Create GitHub release
         if: startsWith(github.ref, 'refs/tags/')
@@ -233,7 +263,10 @@ jobs:
             NOTES="$NOTES"$'\n\n'"Signing/notarization secrets were missing or incomplete, so these DMGs are not notarized."
           fi
 
-          gh release create "$GITHUB_REF_NAME" "$ASSET_DIR"/*.dmg \
+          shopt -s nullglob
+          release_assets=("$ASSET_DIR"/*.dmg "$ASSET_DIR"/appcast.xml "$ASSET_DIR"/*.delta)
+
+          gh release create "$GITHUB_REF_NAME" "${release_assets[@]}" \
             --title "Mac Cleaner $GITHUB_REF_NAME" \
             --notes "$NOTES" \
             --latest

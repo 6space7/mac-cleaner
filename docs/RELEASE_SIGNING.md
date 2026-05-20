@@ -16,8 +16,11 @@ Configure these repository secrets:
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `APPLE_ID` | Apple ID used for notarization |
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for `notarytool` |
+| `SPARKLE_ED_PRIVATE_KEY` | Private EdDSA key used to sign the Sparkle appcast |
 
 The workflow never prints these values. It only imports them inside the runner's temporary keychain.
+
+Tag releases require `SPARKLE_ED_PRIVATE_KEY` so installed apps can verify automatic updates. See [Auto Update](AUTO_UPDATE.md) for the updater feed details.
 
 ## Local Checks
 

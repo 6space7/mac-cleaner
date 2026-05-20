@@ -16,6 +16,7 @@ The app is intentionally not a manual file picker. Press the center **Start** co
 - Active-process checks for app-specific caches so running apps such as Chrome, Arc, Slack, Spotify, VS Code, Cursor, Xcode, and others are not cleaned underneath themselves.
 - Admin retry path for permission-restricted cache files.
 - Auto Clean scheduler with 1h, 2h, 4h, 8h, and 12h intervals.
+- Sparkle-powered automatic updates for public GitHub releases.
 - Menu bar summary for last cleanup, total cleanup, current cache found, and next scheduled run.
 - Native macOS UI built with SwiftUI.
 
@@ -63,6 +64,8 @@ This repository includes GitHub Actions for:
 
 The release workflow creates unsigned DMGs if signing secrets are missing. When Apple signing secrets are configured, it imports the Developer ID certificate into a temporary keychain, builds with hardened runtime, notarizes and staples the app bundle, then notarizes and staples both DMGs.
 
+Tag releases also generate a signed Sparkle `appcast.xml` for automatic updates. See [Auto Update](docs/AUTO_UPDATE.md) for the required Sparkle secret and release checklist.
+
 See [Release Signing](docs/RELEASE_SIGNING.md) for the required secret names.
 
 ## Release
@@ -78,6 +81,7 @@ The release workflow will attach these downloads when it is triggered by a tag:
 
 - `Mac-Cleaner-vX.Y.Z-apple-silicon.dmg`
 - `Mac-Cleaner-vX.Y.Z-intel.dmg`
+- `appcast.xml`
 
 ## Project Structure
 

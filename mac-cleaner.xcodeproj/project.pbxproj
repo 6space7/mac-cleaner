@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		ABC300672FBD89E000EB24E5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = ABC300692FBD89E000EB24E5 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		ABC300592FBD89E000EB24E5 /* mac-cleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mac-cleaner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABC300672FBD89E000EB24E5 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "mac-cleaner";
 			packageProductDependencies = (
+				ABC300692FBD89E000EB24E5 /* Sparkle */,
 			);
 			productName = "mac-cleaner";
 			productReference = ABC300592FBD89E000EB24E5 /* mac-cleaner.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = ABC300502FBD89E000EB24E5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				ABC300682FBD89E000EB24E5 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABC3005A2FBD89E000EB24E5 /* Products */;
 			projectDirPath = "";
@@ -254,10 +263,8 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mac Cleaner";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Mac Cleaner scans Downloads for old installer and archive files only when Deep Scan is selected.";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Config/MacCleanerInfo.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -286,10 +293,8 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mac Cleaner";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Mac Cleaner scans Downloads for old installer and archive files only when Deep Scan is selected.";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Config/MacCleanerInfo.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -329,6 +334,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		ABC300682FBD89E000EB24E5 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		ABC300692FBD89E000EB24E5 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ABC300682FBD89E000EB24E5 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ABC300512FBD89E000EB24E5 /* Project object */;
 }

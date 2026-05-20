@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 struct mac_cleanerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var store = CleanerStore()
+    private let updater = AppUpdater()
 
     var body: some Scene {
         WindowGroup("Mac Cleaner", id: "main") {
@@ -27,6 +28,12 @@ struct mac_cleanerApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    updater.checkForUpdates()
+                }
+            }
+
             CommandMenu("Cleaner") {
                 Button("Start Cleanup") {
                     store.autoCleanRecommended()
