@@ -230,6 +230,7 @@ jobs:
 
           build_arch_dmg "arm64" "apple-silicon" "Apple Silicon"
           build_arch_dmg "x86_64" "intel" "Intel"
+          build_arch_dmg "arm64 x86_64" "universal" "Universal"
 
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             if [[ -z "$SPARKLE_ED_PRIVATE_KEY" ]]; then
@@ -245,13 +246,18 @@ jobs:
             mkdir -p "$sparkle_dir"
             tar -xf "$sparkle_archive" -C "$sparkle_dir" --strip-components 1
 
+            appcast_dir="$RUNNER_TEMP/appcast-assets"
+            mkdir -p "$appcast_dir"
+            cp "$ASSET_DIR/Mac-Cleaner-$VERSION-universal.dmg" "$appcast_dir/"
+
             download_prefix="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/"
             printf '%s' "$SPARKLE_ED_PRIVATE_KEY" | \
               "$sparkle_dir/bin/generate_appcast" \
                 --ed-key-file - \
                 --download-url-prefix "$download_prefix" \
                 -o "$ASSET_DIR/appcast.xml" \
-                "$ASSET_DIR"
+                "$appcast_dir"
+            cp "$appcast_dir"/*.delta "$ASSET_DIR/" 2>/dev/null || true
           else
             echo "Skipping Sparkle appcast generation for non-tag workflow run."
           fi

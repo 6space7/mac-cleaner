@@ -20,8 +20,11 @@ Tag releases generate and attach:
 
 - `Mac-Cleaner-vX.Y.Z-apple-silicon.dmg`
 - `Mac-Cleaner-vX.Y.Z-intel.dmg`
+- `Mac-Cleaner-vX.Y.Z-universal.dmg`
 - `appcast.xml`
 - Sparkle delta files when Sparkle can generate them
+
+Sparkle uses the universal DMG in the appcast. The architecture-specific DMGs are still published as direct downloads.
 
 Sparkle verifies updates with the public EdDSA key embedded in the app bundle.
 The private EdDSA key must stay in GitHub Actions secrets as:

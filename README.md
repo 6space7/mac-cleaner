@@ -81,6 +81,7 @@ The release workflow will attach these downloads when it is triggered by a tag:
 
 - `Mac-Cleaner-vX.Y.Z-apple-silicon.dmg`
 - `Mac-Cleaner-vX.Y.Z-intel.dmg`
+- `Mac-Cleaner-vX.Y.Z-universal.dmg`
 - `appcast.xml`
 
 ## Project Structure
