@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct FocusedHeader: View {
@@ -6,9 +7,15 @@ struct FocusedHeader: View {
     var body: some View {
         HStack {
             HStack(spacing: 10) {
-                Image(systemName: "internaldrive.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(FocusedCleanerPalette.green)
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 22, height: 22)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(FocusedCleanerPalette.stroke, lineWidth: 1)
+                    )
 
                 Text("Mac Cleaner")
                     .font(.system(size: 14, weight: .semibold))

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/brand/mac-cleaner-logo.svg" width="112" alt="Mac Cleaner Orbit Clean logo">
+</p>
+
 # Mac Cleaner
 
 Mac Cleaner is a native SwiftUI cache cleaner for macOS. It focuses on one job: find regenerable cache files, delete the safe ones, and stay quiet unless something actually needs attention.

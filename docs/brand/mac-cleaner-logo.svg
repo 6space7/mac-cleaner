@@ -1,0 +1,43 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Mac Cleaner logo - Orbit Clean</title>
+  <desc id="desc">A dark rounded app icon with a glowing cleanup orbit around a storage core.</desc>
+  <defs>
+    <linearGradient id="bg" x1="72" y1="48" x2="448" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071524"/>
+      <stop offset="0.58" stop-color="#102033"/>
+      <stop offset="1" stop-color="#071018"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="143" y1="126" x2="389" y2="388" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2C35F"/>
+      <stop offset="0.34" stop-color="#72D6EA"/>
+      <stop offset="0.72" stop-color="#6FE39F"/>
+      <stop offset="1" stop-color="#DFFBE8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(257 246) rotate(90) scale(150)">
+      <stop stop-color="#66E09A" stop-opacity="0.36"/>
+      <stop offset="1" stop-color="#66E09A" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="69" y="68" width="374" height="374" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="18"/>
+      <feGaussianBlur stdDeviation="24"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.03 0 0 0 0 0.05 0 0 0 0 0.07 0 0 0 0.45 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#bg)"/>
+  <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#glow)"/>
+  <g filter="url(#softShadow)">
+    <circle cx="256" cy="256" r="145" stroke="#203447" stroke-width="22"/>
+    <path d="M170 139C211 108 269 99 318 119" stroke="url(#orbit)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M393 243C399 296 373 350 328 378" stroke="url(#orbit)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M206 392C156 374 120 328 114 275" stroke="url(#orbit)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M235 183H277C295.778 183 311 198.222 311 217V287C311 305.778 295.778 321 277 321H235C216.222 321 201 305.778 201 287V217C201 198.222 216.222 183 235 183Z" fill="#DFF9EA"/>
+    <path d="M219 230H293" stroke="#183346" stroke-width="15" stroke-linecap="round"/>
+    <path d="M224 276H288" stroke="#183346" stroke-width="15" stroke-linecap="round"/>
+    <circle cx="256" cy="252" r="18" fill="#6FE39F"/>
+    <path d="M347 145L356 166L378 175L356 184L347 205L338 184L316 175L338 166L347 145Z" fill="#F5C967"/>
+  </g>
+</svg>
