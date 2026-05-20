@@ -100,7 +100,9 @@ jobs:
               CODE_SIGN_STYLE=Manual \
               CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
               DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+              CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
               ENABLE_HARDENED_RUNTIME=YES \
+              OTHER_CODE_SIGN_FLAGS="--timestamp --options runtime" \
               build
           else
             xcodebuild \
@@ -142,11 +144,28 @@ jobs:
             exit 0
           fi
 
+          NOTARY_JSON="$RUNNER_TEMP/notary-result.json"
           xcrun notarytool submit "${{ steps.package.outputs.zip }}" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --wait \
+            --output-format json > "$NOTARY_JSON"
+
+          NOTARY_STATUS="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("status", ""))' "$NOTARY_JSON")"
+          SUBMISSION_ID="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id", ""))' "$NOTARY_JSON")"
+          if [[ "$NOTARY_STATUS" != "Accepted" ]]; then
+            echo "Notarization finished with status: $NOTARY_STATUS" >&2
+            if [[ -n "$SUBMISSION_ID" ]]; then
+              xcrun notarytool log "$SUBMISSION_ID" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID" \
+                "$RUNNER_TEMP/notary-log.json" || true
+              cat "$RUNNER_TEMP/notary-log.json" || true
+            fi
+            exit 1
+          fi
 
           xcrun stapler staple "${{ steps.package.outputs.app }}"
 
